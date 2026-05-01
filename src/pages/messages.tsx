@@ -24,7 +24,7 @@ export default function MessagesPage() {
 
   // Pre-select a thread from query (?thread=...) or auto-pick the first one on desktop.
   const requestedThread = search.get("thread");
-  const requestedStudent = search.get("student"); // for tutor jumping from a Students-page link
+  const requestedStudent = search.get("student"); // tutor jumping from a Students-page link
   const matched =
     requestedThread ??
     (requestedStudent
@@ -152,30 +152,12 @@ export default function MessagesPage() {
                 </Badge>
               </header>
 
-              <div className="flex-1 overflow-y-auto bg-secondary/20 px-4 py-4">
-                {messages.isLoading ? (
-                  <Skeleton className="h-32 w-full" />
-                ) : (messages.data ?? []).length === 0 ? (
-                  <p className="text-center text-sm text-muted-foreground">Say hi 👋</p>
-                ) : (
-                  <ol className="flex flex-col gap-3">
-                    {groupByDay(messages.data ?? []).map((group) => (
-                      <li key={group.day} className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <div className="h-px flex-1 bg-border" />
-                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                            {dayLabel(group.day)}
-                          </span>
-                          <div className="h-px flex-1 bg-border" />
-                        </div>
-                        {group.items.map((m) => (
-                          <Bubble key={m.id} mine={m.sender_id === profile?.id} body={m.body} time={m.created_at} />
-                        ))}
-                      </li>
-                    ))}
-                  </ol>
-                )}
-              </div>
+              <ConversationScroll
+                messages={messages.data ?? []}
+                isLoading={messages.isLoading}
+                myId={profile?.id}
+                threadId={active.id}
+              />
 
               <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-border px-4 py-3">
                 <input
@@ -193,6 +175,78 @@ export default function MessagesPage() {
           )}
         </Card>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Auto-scrolling conversation list. Sticks to the bottom while the user
+ * is at/near the bottom (sending or receiving). If they scroll up to read
+ * older messages, new arrivals do NOT yank the scroll position.
+ */
+function ConversationScroll({
+  messages, isLoading, myId, threadId,
+}: {
+  messages: { id: string; sender_id: string; body: string; created_at: string }[];
+  isLoading: boolean;
+  myId: string | undefined;
+  threadId: string;
+}) {
+  const bottomRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const lastCount = React.useRef(0);
+  const stickToBottom = React.useRef(true);
+
+  // When the active thread changes, jump to bottom immediately.
+  React.useEffect(() => {
+    lastCount.current = 0;
+    stickToBottom.current = true;
+    queueMicrotask(() => bottomRef.current?.scrollIntoView({ block: "end" }));
+  }, [threadId]);
+
+  // When messages grow (sent or received), smooth-scroll if user is "stuck".
+  React.useEffect(() => {
+    const count = messages.length;
+    if (count === lastCount.current) return;
+    const grew = count > lastCount.current;
+    lastCount.current = count;
+    if (grew && stickToBottom.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [messages.length]);
+
+  function onScroll() {
+    const el = containerRef.current;
+    if (!el) return;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    stickToBottom.current = distance < 80;
+  }
+
+  return (
+    <div ref={containerRef} onScroll={onScroll} className="flex-1 overflow-y-auto bg-secondary/20 px-4 py-4">
+      {isLoading ? (
+        <Skeleton className="h-32 w-full" />
+      ) : messages.length === 0 ? (
+        <p className="text-center text-sm text-muted-foreground">Say hi 👋</p>
+      ) : (
+        <ol className="flex flex-col gap-3">
+          {groupByDay(messages).map((group) => (
+            <li key={group.day} className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {dayLabel(group.day)}
+                </span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+              {group.items.map((m) => (
+                <Bubble key={m.id} mine={m.sender_id === myId} body={m.body} time={m.created_at} />
+              ))}
+            </li>
+          ))}
+        </ol>
+      )}
+      <div ref={bottomRef} aria-hidden />
     </div>
   );
 }
