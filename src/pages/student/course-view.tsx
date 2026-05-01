@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
-  ArrowLeft, CheckCircle2, FileText, Film, Loader2, PlayCircle, Type, Wifi,
+  ArrowLeft, ArrowRight, CheckCircle2, FileText, Film, ListChecks, Loader2, PlayCircle, Type, Wifi,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
@@ -97,6 +97,18 @@ export default function StudentCourseViewPage() {
     },
   });
 
+  const quizzesQ = useQuery({
+    queryKey: ["course-quizzes", courseId],
+    enabled: !!courseId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("quizzes")
+        .select("id, title, instructions")
+        .eq("course_id", courseId!);
+      return data ?? [];
+    },
+  });
+
   const allLessons = (modulesQ.data ?? []).flatMap((m) => m.lessons);
   const lessonId = search.get("lesson") ?? allLessons[0]?.id;
   const currentLesson = allLessons.find((l) => l.id === lessonId);
@@ -155,6 +167,27 @@ export default function StudentCourseViewPage() {
         <Card className="h-fit">
           <CardHeader className="py-4"><CardTitle className="text-base">Course content</CardTitle></CardHeader>
           <CardContent className="space-y-4">
+            {(quizzesQ.data ?? []).length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Quizzes</p>
+                <ul className="space-y-1">
+                  {(quizzesQ.data ?? []).map((q: any) => (
+                    <li key={q.id}>
+                      <Link
+                        to={`/student/quizzes/${q.id}`}
+                        className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-secondary"
+                      >
+                        <span className="grid h-6 w-6 place-items-center rounded bg-accent/15 text-accent-foreground">
+                          <ListChecks className="h-3.5 w-3.5" />
+                        </span>
+                        <span className="line-clamp-1 flex-1">{q.title}</span>
+                        <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             {(modulesQ.data ?? []).map((m) => (
               <div key={m.id} className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{m.title}</p>

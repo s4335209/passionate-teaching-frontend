@@ -16,6 +16,7 @@ import StudentDashboard from "@/pages/student/dashboard";
 import StudentCoursesPage from "@/pages/student/courses";
 import StudentCourseViewPage from "@/pages/student/course-view";
 import StudentAssignmentsPage from "@/pages/student/assignments";
+import StudentQuizPage from "@/pages/student/quiz";
 import TutorDashboard from "@/pages/tutor/dashboard";
 import TutorCoursesPage from "@/pages/tutor/courses";
 import TutorCourseEditPage from "@/pages/tutor/course-edit";
@@ -23,6 +24,7 @@ import TutorStudentsPage from "@/pages/tutor/students";
 import TutorGradingPage from "@/pages/tutor/grading";
 import AdminDashboard from "@/pages/admin/dashboard";
 import SettingsPage from "@/pages/settings";
+import MessagesPage from "@/pages/messages";
 
 function NotFound() {
   return <StubPage title="404 — page not found" description="That page hasn't been built yet." />;
@@ -49,8 +51,9 @@ export default function App() {
           <Route index element={<StudentDashboard />} />
           <Route path="courses" element={<StudentCoursesPage />} />
           <Route path="courses/:id" element={<StudentCourseViewPage />} />
+          <Route path="quizzes/:id" element={<StudentQuizPage />} />
           <Route path="assignments" element={<StudentAssignmentsPage />} />
-          <Route path="messages" element={<StubPage title="Messages" description="Talk to your tutor." />} />
+          <Route path="messages" element={<MessagesPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
@@ -68,7 +71,7 @@ export default function App() {
           <Route path="courses/:id" element={<TutorCourseEditPage />} />
           <Route path="students" element={<TutorStudentsPage />} />
           <Route path="assignments" element={<TutorGradingPage />} />
-          <Route path="messages" element={<StubPage title="Messages" description="Talk to your students." />} />
+          <Route path="messages" element={<MessagesPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
