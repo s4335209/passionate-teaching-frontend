@@ -3,8 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import {
-  CheckCircle2, ClipboardList, FileText, Loader2, MessageSquareQuote, Save,
+  CheckCircle2, ClipboardList, Loader2, MessageSquareQuote, Save,
 } from "lucide-react";
+import { SubmissionFileLink } from "@/components/submission-file-link";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -251,13 +252,7 @@ function SubmissionRowCard({
             “{sub.text_response}”
           </div>
         ) : null}
-        {sub.file_url ? (
-          <p className="flex items-center gap-2 text-sm">
-            <FileText className="h-4 w-4 text-primary" />
-            <span className="font-mono text-xs">{sub.file_url.split("/").pop()}</span>
-            <Badge variant="outline" className="ml-auto">Attached</Badge>
-          </p>
-        ) : null}
+        {sub.file_url ? <SubmissionFileLink path={sub.file_url} /> : null}
 
         <div className="grid gap-3 sm:grid-cols-[160px_1fr]">
           <div className="space-y-2">

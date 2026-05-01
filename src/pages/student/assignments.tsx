@@ -3,8 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, formatDistanceToNow, isPast } from "date-fns";
 import { toast } from "sonner";
 import {
-  CalendarClock, CheckCircle2, ClipboardList, FileText, Loader2, MessageSquareQuote, UploadCloud,
+  CalendarClock, CheckCircle2, ClipboardList, Loader2, MessageSquareQuote, UploadCloud,
 } from "lucide-react";
+import { SubmissionFileLink } from "@/components/submission-file-link";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -238,14 +239,10 @@ function SubmittedCard({ a }: { a: AssignmentRow }) {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-2 text-sm text-muted-foreground">
+      <CardContent className="space-y-3 text-sm text-muted-foreground">
         <p>Submitted {format(new Date(sub.submitted_at), "d MMM yyyy 'at' HH:mm")}.</p>
         {sub.text_response ? <p className="italic">“{sub.text_response}”</p> : null}
-        {sub.file_url ? (
-          <p className="flex items-center gap-2 text-foreground">
-            <FileText className="h-4 w-4" /> {sub.file_url.split("/").pop()}
-          </p>
-        ) : null}
+        {sub.file_url ? <SubmissionFileLink path={sub.file_url} /> : null}
       </CardContent>
     </Card>
   );
@@ -280,6 +277,7 @@ function GradedCard({ a }: { a: AssignmentRow }) {
             <p className="text-sm leading-relaxed text-foreground">{sub.feedback}</p>
           </div>
         ) : null}
+        {sub.file_url ? <SubmissionFileLink path={sub.file_url} /> : null}
       </CardContent>
     </Card>
   );
